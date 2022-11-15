@@ -1107,11 +1107,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
   private long getLiveOffsetUs(Timeline timeline, Object periodUid, long periodPositionUs) {
     int windowIndex = timeline.getPeriodByUid(periodUid, period).windowIndex;
     timeline.getWindow(windowIndex, window);
-    if (window.windowStartTimeMs == C.TIME_UNSET || !window.isLive() || !window.isDynamic) {
-      return C.TIME_UNSET;
+
+    long ret = C.TIME_UNSET;
+    if (window.windowStartTimeMs != C.TIME_UNSET || !window.isLive() || window.isDynamic) {
+      ret = Util.msToUs(window.getCurrentUnixTimeMs() - window.windowStartTimeMs)
+          - (periodPositionUs + period.getPositionInWindowUs());
+      return ret;
     }
-    return Util.msToUs(window.getCurrentUnixTimeMs() - window.windowStartTimeMs)
-        - (periodPositionUs + period.getPositionInWindowUs());
+    if (window.liveOffsetFromPositionMs != C.TIME_UNSET || !window.isLive()
+        || window.liveOffsetFromInitialStartTimeUs <= 0) {
+      ret = Util.msToUs(window.getCurrentUnixTimeMs() - window.liveOffsetFromPositionMs)
+          - (periodPositionUs + window.liveOffsetFromInitialStartTimeUs);
+      return ret;
+    }
+    return ret;
   }
 
   private boolean shouldUseLivePlaybackSpeedControl(
@@ -1121,7 +1130,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
     }
     int windowIndex = timeline.getPeriodByUid(mediaPeriodId.periodUid, period).windowIndex;
     timeline.getWindow(windowIndex, window);
-    return window.isLive() && window.isDynamic && window.windowStartTimeMs != C.TIME_UNSET;
+    // return window.isLive() && window.isDynamic && window.windowStartTimeMs != C.TIME_UNSET;
+    return window.isLive() && (window.windowStartTimeMs != C.TIME_UNSET|| window.liveOffsetFromPositionMs != C.TIME_UNSET);
   }
 
   private void scheduleNextWork(long thisOperationStartTimeMs, long intervalMs) {

@@ -65,12 +65,18 @@ import java.util.regex.Pattern;
 import org.checkerframework.checker.nullness.qual.EnsuresNonNullIf;
 import org.checkerframework.checker.nullness.qual.PolyNull;
 
-/** HLS playlists parsing logic. */
+/**
+ * HLS playlists parsing logic.
+ */
 @UnstableApi
 public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlaylist> {
 
-  /** Exception thrown when merging a delta update fails. */
-  public static final class DeltaUpdateException extends IOException {}
+  /**
+   * Exception thrown when merging a delta update fails.
+   */
+  public static final class DeltaUpdateException extends IOException {
+
+  }
 
   private static final String LOG_TAG = "HlsPlaylistParser";
 
@@ -226,7 +232,8 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
       Pattern.compile("\\{\\$([a-zA-Z0-9\\-_]+)\\}");
 
   private final HlsMultivariantPlaylist multivariantPlaylist;
-  @Nullable private final HlsMediaPlaylist previousMediaPlaylist;
+  @Nullable
+  private final HlsMediaPlaylist previousMediaPlaylist;
 
   /**
    * Creates an instance where media playlists are parsed without inheriting attributes from a
@@ -240,10 +247,10 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
    * Creates an instance where parsed media playlists inherit attributes from the given master
    * playlist.
    *
-   * @param multivariantPlaylist The multivariant playlist from which media playlists will inherit
-   *     attributes.
+   * @param multivariantPlaylist  The multivariant playlist from which media playlists will inherit
+   *                              attributes.
    * @param previousMediaPlaylist The previous media playlist from which the new media playlist may
-   *     inherit skipped segments.
+   *                              inherit skipped segments.
    */
   public HlsPlaylistParser(
       HlsMultivariantPlaylist multivariantPlaylist,
@@ -1041,7 +1048,10 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
     if (preloadPart != null) {
       trailingParts.add(preloadPart);
     }
-
+    if (playlistStartTimeUs == 0 && !hasEndTag) {
+      playlistStartTimeUs = System.currentTimeMillis() * 1000;
+      // playlistStartTimeUs= C.TIME_UNSET;
+    }
     return new HlsMediaPlaylist(
         playlistType,
         baseUri,
@@ -1289,7 +1299,8 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
     private final BufferedReader reader;
     private final Queue<String> extraLines;
 
-    @Nullable private String next;
+    @Nullable
+    private String next;
 
     public LineIterator(Queue<String> extraLines, BufferedReader reader) {
       this.extraLines = extraLines;
@@ -1314,7 +1325,9 @@ public final class HlsPlaylistParser implements ParsingLoadable.Parser<HlsPlayli
       return false;
     }
 
-    /** Return the next line, or throw {@link NoSuchElementException} if none. */
+    /**
+     * Return the next line, or throw {@link NoSuchElementException} if none.
+     */
     public String next() throws IOException {
       if (hasNext()) {
         String result = next;

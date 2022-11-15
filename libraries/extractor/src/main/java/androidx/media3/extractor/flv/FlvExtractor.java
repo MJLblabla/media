@@ -30,6 +30,7 @@ import androidx.media3.extractor.ExtractorsFactory;
 import androidx.media3.extractor.IndexSeekMap;
 import androidx.media3.extractor.PositionHolder;
 import androidx.media3.extractor.SeekMap;
+import androidx.media3.extractor.SeekPoint;
 import java.io.IOException;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -42,20 +43,26 @@ import org.checkerframework.checker.nullness.qual.RequiresNonNull;
 @UnstableApi
 public final class FlvExtractor implements Extractor {
 
-  /** Factory for {@link FlvExtractor} instances. */
-  public static final ExtractorsFactory FACTORY = () -> new Extractor[] {new FlvExtractor()};
+  /**
+   * Factory for {@link FlvExtractor} instances.
+   */
+  public static final ExtractorsFactory FACTORY = () -> new Extractor[]{new FlvExtractor()};
 
-  /** Extractor states. */
+  /**
+   * Extractor states.
+   */
   @Documented
   @Retention(RetentionPolicy.SOURCE)
   @Target(TYPE_USE)
   @IntDef({
-    STATE_READING_FLV_HEADER,
-    STATE_SKIPPING_TO_TAG_HEADER,
-    STATE_READING_TAG_HEADER,
-    STATE_READING_TAG_DATA
+      STATE_READING_FLV_HEADER,
+      STATE_SKIPPING_TO_TAG_HEADER,
+      STATE_READING_TAG_HEADER,
+      STATE_READING_TAG_DATA
   })
-  private @interface States {}
+  private @interface States {
+
+  }
 
   private static final int STATE_READING_FLV_HEADER = 1;
   private static final int STATE_SKIPPING_TO_TAG_HEADER = 2;
@@ -92,6 +99,8 @@ public final class FlvExtractor implements Extractor {
   private @MonotonicNonNull AudioTagPayloadReader audioReader;
   private @MonotonicNonNull VideoTagPayloadReader videoReader;
 
+  private long initialStartTimeUs = 0;
+
   public FlvExtractor() {
     scratch = new ParsableByteArray(4);
     headerBuffer = new ParsableByteArray(FLV_HEADER_SIZE);
@@ -113,6 +122,8 @@ public final class FlvExtractor implements Extractor {
     // Checking reserved flags are set to 0
     input.peekFully(scratch.getData(), 0, 2);
     scratch.setPosition(0);
+    //0xFA -> 11111010
+    //00000101
     if ((scratch.readUnsignedShort() & 0xFA) != 0) {
       return false;
     }
@@ -120,9 +131,10 @@ public final class FlvExtractor implements Extractor {
     // Read data offset
     input.peekFully(scratch.getData(), 0, 4);
     scratch.setPosition(0);
+    //back-pointers 固定4个字节，表示前一个tag的size。
     int dataOffset = scratch.readInt();
-
     input.resetPeekPosition();
+    //
     input.advancePeekPosition(dataOffset);
 
     // Checking first "previous tag size" is set to 0
@@ -135,6 +147,7 @@ public final class FlvExtractor implements Extractor {
   @Override
   public void init(ExtractorOutput output) {
     this.extractorOutput = output;
+    indexMockWindow = 0;
   }
 
   @Override
@@ -146,11 +159,13 @@ public final class FlvExtractor implements Extractor {
       state = STATE_READING_TAG_HEADER;
     }
     bytesToNextTagHeader = 0;
+    indexMockWindow = 0;
   }
 
   @Override
   public void release() {
     // Do nothing
+    indexMockWindow = 0;
   }
 
   @Override
@@ -307,12 +322,23 @@ public final class FlvExtractor implements Extractor {
     return tagData;
   }
 
+  private int indexMockWindow = 0;
+  private long lastMockPosition = 0;
+
   @RequiresNonNull("extractorOutput")
   private void ensureReadyForMediaOutput() {
-    if (!outputSeekMap) {
-      extractorOutput.seekMap(new SeekMap.Unseekable(C.TIME_UNSET));
-      outputSeekMap = true;
+    if (indexMockWindow == 0) {
+      lastMockPosition = 0;
+      initialStartTimeUs = System.currentTimeMillis() * 1000;
     }
+    long current = getCurrentTimestampUs();
+    if (indexMockWindow == 0 || current - lastMockPosition > 3000 * 1000) {
+      extractorOutput.seekMap(new SeekMap.MockWindowSeekMap(C.TIME_UNSET,
+          new SeekPoint(current, System.currentTimeMillis()), initialStartTimeUs));
+      outputSeekMap = true;
+      lastMockPosition = current;
+    }
+    indexMockWindow++;
   }
 
   private long getCurrentTimestampUs() {

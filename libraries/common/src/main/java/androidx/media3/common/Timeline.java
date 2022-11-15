@@ -34,6 +34,7 @@ import androidx.media3.common.util.BundleUtil;
 import androidx.media3.common.util.UnstableApi;
 import androidx.media3.common.util.Util;
 import com.google.common.collect.ImmutableList;
+import com.google.errorprone.annotations.CanIgnoreReturnValue;
 import com.google.errorprone.annotations.InlineMe;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
@@ -150,6 +151,8 @@ public abstract class Timeline implements Bundleable {
    */
   public static final class Window implements Bundleable {
 
+    public long liveOffsetFromInitialStartTimeUs = 1;
+    public long liveOffsetFromPositionMs = C.TIME_UNSET;
     /**
      * A {@link #uid} for a window that must be used for single-window {@link Timeline Timelines}.
      */
@@ -159,7 +162,7 @@ public abstract class Timeline implements Bundleable {
 
     private static final MediaItem EMPTY_MEDIA_ITEM =
         new MediaItem.Builder()
-            .setMediaId("androidx.media3.common.Timeline")
+            .setMediaId("com.google.android.exoplayer2.Timeline")
             .setUri(Uri.EMPTY)
             .build();
 
@@ -172,13 +175,20 @@ public abstract class Timeline implements Bundleable {
     /**
      * @deprecated Use {@link #mediaItem} instead.
      */
-    @UnstableApi @Deprecated @Nullable public Object tag;
+    @Deprecated
+    @Nullable
+    public Object tag;
 
-    /** The {@link MediaItem} associated to the window. Not necessarily unique. */
+    /**
+     * The {@link MediaItem} associated to the window. Not necessarily unique.
+     */
     public MediaItem mediaItem;
 
-    /** The manifest of the window. May be {@code null}. */
-    @Nullable public Object manifest;
+    /**
+     * The manifest of the window. May be {@code null}.
+     */
+    @Nullable
+    public Object manifest;
 
     /**
      * The start time of the presentation to which this window belongs in milliseconds since the
@@ -203,7 +213,9 @@ public abstract class Timeline implements Bundleable {
      */
     public long elapsedRealtimeEpochOffsetMs;
 
-    /** Whether it's possible to seek within this window. */
+    /**
+     * Whether it's possible to seek within this window.
+     */
     public boolean isSeekable;
 
     // TODO: Split this to better describe which parts of the window might change. For example it
@@ -211,19 +223,23 @@ public abstract class Timeline implements Bundleable {
     // window may change relative to the underlying periods. For an example of where it's useful to
     // know that the end position is fixed whilst the start position may still change, see:
     // https://github.com/google/ExoPlayer/issues/4780.
-    /** Whether this window may change when the timeline is updated. */
+    /**
+     * Whether this window may change when the timeline is updated.
+     */
     public boolean isDynamic;
 
     /**
      * @deprecated Use {@link #isLive()} instead.
      */
-    @UnstableApi @Deprecated public boolean isLive;
+    @Deprecated
+    public boolean isLive;
 
     /**
      * The {@link MediaItem.LiveConfiguration} that is used or null if {@link #isLive()} returns
      * false.
      */
-    @Nullable public MediaItem.LiveConfiguration liveConfiguration;
+    @Nullable
+    public MediaItem.LiveConfiguration liveConfiguration;
 
     /**
      * Whether this window contains placeholder information because the real information has yet to
@@ -237,31 +253,41 @@ public abstract class Timeline implements Bundleable {
      * non-zero default position projection, and if the specified projection cannot be performed
      * whilst remaining within the bounds of the window.
      */
-    @UnstableApi public long defaultPositionUs;
+    public long defaultPositionUs;
 
-    /** The duration of this window in microseconds, or {@link C#TIME_UNSET} if unknown. */
-    @UnstableApi public long durationUs;
+    /**
+     * The duration of this window in microseconds, or {@link C#TIME_UNSET} if unknown.
+     */
+    public long durationUs;
 
-    /** The index of the first period that belongs to this window. */
+    /**
+     * The index of the first period that belongs to this window.
+     */
     public int firstPeriodIndex;
 
-    /** The index of the last period that belongs to this window. */
+    /**
+     * The index of the last period that belongs to this window.
+     */
     public int lastPeriodIndex;
 
     /**
      * The position of the start of this window relative to the start of the first period belonging
      * to it, in microseconds.
      */
-    @UnstableApi public long positionInFirstPeriodUs;
+    public long positionInFirstPeriodUs;
 
-    /** Creates window. */
+    /**
+     * Creates window.
+     */
     public Window() {
       uid = SINGLE_WINDOW_UID;
       mediaItem = EMPTY_MEDIA_ITEM;
     }
 
-    /** Sets the data held by this window. */
-    @UnstableApi
+    /**
+     * Sets the data held by this window.
+     */
+    @CanIgnoreReturnValue
     @SuppressWarnings("deprecation")
     public Window set(
         Object uid,
@@ -321,12 +347,16 @@ public abstract class Timeline implements Bundleable {
       return defaultPositionUs;
     }
 
-    /** Returns the duration of the window in milliseconds, or {@link C#TIME_UNSET} if unknown. */
+    /**
+     * Returns the duration of the window in milliseconds, or {@link C#TIME_UNSET} if unknown.
+     */
     public long getDurationMs() {
       return Util.usToMs(durationUs);
     }
 
-    /** Returns the duration of this window in microseconds, or {@link C#TIME_UNSET} if unknown. */
+    /**
+     * Returns the duration of this window in microseconds, or {@link C#TIME_UNSET} if unknown.
+     */
     public long getDurationUs() {
       return durationUs;
     }
@@ -357,7 +387,9 @@ public abstract class Timeline implements Bundleable {
       return Util.getNowUnixTimeMs(elapsedRealtimeEpochOffsetMs);
     }
 
-    /** Returns whether this is a live stream. */
+    /**
+     * Returns whether this is a live stream.
+     */
     // Verifies whether the deprecated isLive member field is in a correct state.
     @SuppressWarnings("deprecation")
     public boolean isLive() {
@@ -422,21 +454,23 @@ public abstract class Timeline implements Bundleable {
     @Retention(RetentionPolicy.SOURCE)
     @Target(TYPE_USE)
     @IntDef({
-      FIELD_MEDIA_ITEM,
-      FIELD_PRESENTATION_START_TIME_MS,
-      FIELD_WINDOW_START_TIME_MS,
-      FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS,
-      FIELD_IS_SEEKABLE,
-      FIELD_IS_DYNAMIC,
-      FIELD_LIVE_CONFIGURATION,
-      FIELD_IS_PLACEHOLDER,
-      FIELD_DEFAULT_POSITION_US,
-      FIELD_DURATION_US,
-      FIELD_FIRST_PERIOD_INDEX,
-      FIELD_LAST_PERIOD_INDEX,
-      FIELD_POSITION_IN_FIRST_PERIOD_US,
+        FIELD_MEDIA_ITEM,
+        FIELD_PRESENTATION_START_TIME_MS,
+        FIELD_WINDOW_START_TIME_MS,
+        FIELD_ELAPSED_REALTIME_EPOCH_OFFSET_MS,
+        FIELD_IS_SEEKABLE,
+        FIELD_IS_DYNAMIC,
+        FIELD_LIVE_CONFIGURATION,
+        FIELD_IS_PLACEHOLDER,
+        FIELD_DEFAULT_POSITION_US,
+        FIELD_DURATION_US,
+        FIELD_FIRST_PERIOD_INDEX,
+        FIELD_LAST_PERIOD_INDEX,
+        FIELD_POSITION_IN_FIRST_PERIOD_US,
     })
-    private @interface FieldNumber {}
+    private @interface FieldNumber {
+
+    }
 
     private static final int FIELD_MEDIA_ITEM = 1;
     private static final int FIELD_PRESENTATION_START_TIME_MS = 2;
@@ -473,6 +507,8 @@ public abstract class Timeline implements Bundleable {
       bundle.putInt(keyForField(FIELD_FIRST_PERIOD_INDEX), firstPeriodIndex);
       bundle.putInt(keyForField(FIELD_LAST_PERIOD_INDEX), lastPeriodIndex);
       bundle.putLong(keyForField(FIELD_POSITION_IN_FIRST_PERIOD_US), positionInFirstPeriodUs);
+      bundle.putLong("liveOffsetFromInitialStartTimeUs", liveOffsetFromInitialStartTimeUs);
+      bundle.putLong("liveOffsetFromPositionMs",liveOffsetFromPositionMs);
       return bundle;
     }
 
@@ -484,7 +520,6 @@ public abstract class Timeline implements Bundleable {
      * instance will be {@code null}.
      */
     // TODO(b/166765820): See if missing fields would be okay and add them to the Bundle otherwise.
-    @UnstableApi
     @Override
     public Bundle toBundle() {
       return toBundle(/* excludeMediaItem= */ false);
@@ -496,7 +531,7 @@ public abstract class Timeline implements Bundleable {
      * <p>The {@link #uid} of a restored instance will be a fake {@link Object} and the {@link
      * #manifest} of the instance will be {@code null}.
      */
-    @UnstableApi public static final Creator<Window> CREATOR = Window::fromBundle;
+    public static final Creator<Window> CREATOR = Window::fromBundle;
 
     private static Window fromBundle(Bundle bundle) {
       @Nullable Bundle mediaItemBundle = bundle.getBundle(keyForField(FIELD_MEDIA_ITEM));
@@ -535,7 +570,8 @@ public abstract class Timeline implements Bundleable {
           bundle.getInt(keyForField(FIELD_LAST_PERIOD_INDEX), /* defaultValue= */ 0);
       long positionInFirstPeriodUs =
           bundle.getLong(keyForField(FIELD_POSITION_IN_FIRST_PERIOD_US), /* defaultValue= */ 0);
-
+      long liveOffsetFromInitialStartTimeUs = bundle.getLong("liveOffsetFromInitialStartTimeUs", 0);
+      long liveOffsetFromPositionMs =bundle.getLong("liveOffsetFromPositionMs",C.TIME_UNSET);
       Window window = new Window();
       window.set(
           FAKE_WINDOW_UID,
@@ -553,6 +589,8 @@ public abstract class Timeline implements Bundleable {
           lastPeriodIndex,
           positionInFirstPeriodUs);
       window.isPlaceholder = isPlaceHolder;
+      window.liveOffsetFromInitialStartTimeUs = liveOffsetFromInitialStartTimeUs;
+      window.liveOffsetFromPositionMs = liveOffsetFromPositionMs;
       return window;
     }
 

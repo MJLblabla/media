@@ -88,7 +88,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
      * @param isSeekable Whether the period is seekable.
      * @param isLive Whether the period is live.
      */
-    void onSourceInfoRefreshed(long durationUs, boolean isSeekable, boolean isLive);
+    void onSourceInfoRefreshed(long durationUs, boolean isSeekable, boolean isLive, @Nullable  SeekMap seekMap);
   }
 
   /**
@@ -557,7 +557,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
           largestQueuedTimestampUs == Long.MIN_VALUE
               ? 0
               : largestQueuedTimestampUs + DEFAULT_LAST_SAMPLE_DURATION_US;
-      listener.onSourceInfoRefreshed(durationUs, isSeekable, isLive);
+      listener.onSourceInfoRefreshed(durationUs, isSeekable, isLive,null);
     }
     StatsDataSource dataSource = loadable.dataSource;
     LoadEventInfo loadEventInfo =
@@ -737,7 +737,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
     durationUs = seekMap.getDurationUs();
     isLive = !isLengthKnown && seekMap.getDurationUs() == C.TIME_UNSET;
     dataType = isLive ? C.DATA_TYPE_MEDIA_PROGRESSIVE_LIVE : C.DATA_TYPE_MEDIA;
-    listener.onSourceInfoRefreshed(durationUs, seekMap.isSeekable(), isLive);
+    listener.onSourceInfoRefreshed(durationUs, seekMap.isSeekable(), isLive,seekMap);
     if (!prepared) {
       maybeFinishPrepare();
     }

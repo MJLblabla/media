@@ -66,6 +66,35 @@ public interface SeekMap {
       return startSeekPoints;
     }
   }
+  class MockWindowSeekMap implements SeekMap {
+
+    public long initialStartTimeUs = 0;
+    private final long durationUs;
+    private final SeekPoints startSeekPoints;
+    public SeekPoint mockSeekPoint;
+    public MockWindowSeekMap(long durationUs, SeekPoint mockSeekPoint,long initialStartTimeUs) {
+      this.initialStartTimeUs = initialStartTimeUs;
+      this.mockSeekPoint = mockSeekPoint;
+      this.durationUs = durationUs;
+      startSeekPoints = new SeekPoints( SeekPoint.START );
+    }
+
+
+    @Override
+    public boolean isSeekable() {
+      return false;
+    }
+
+    @Override
+    public long getDurationUs() {
+      return durationUs;
+    }
+
+    @Override
+    public SeekPoints getSeekPoints(long timeUs) {
+      return startSeekPoints;
+    }
+  }
 
   /** Contains one or two {@link SeekPoint}s. */
   final class SeekPoints {

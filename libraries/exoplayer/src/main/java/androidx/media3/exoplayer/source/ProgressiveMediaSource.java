@@ -35,6 +35,7 @@ import androidx.media3.exoplayer.upstream.LoadErrorHandlingPolicy;
 import androidx.media3.extractor.DefaultExtractorsFactory;
 import androidx.media3.extractor.Extractor;
 import androidx.media3.extractor.ExtractorsFactory;
+import androidx.media3.extractor.SeekMap;
 
 /**
  * Provides one period that loads data from a {@link Uri} and extracted using an {@link Extractor}.
@@ -277,7 +278,7 @@ public final class ProgressiveMediaSource extends BaseMediaSource
     drmSessionManager.prepare();
     drmSessionManager.setPlayer(
         /* playbackLooper= */ checkNotNull(Looper.myLooper()), getPlayerId());
-    notifySourceInfoRefreshed();
+    notifySourceInfoRefreshed(null);
   }
 
   @Override
@@ -317,40 +318,71 @@ public final class ProgressiveMediaSource extends BaseMediaSource
 
   // ProgressiveMediaPeriod.Listener implementation.
 
-  @Override
-  public void onSourceInfoRefreshed(long durationUs, boolean isSeekable, boolean isLive) {
+  public void onSourceInfoRefreshed(long durationUs, boolean isSeekable, boolean isLive,
+      @Nullable SeekMap seekMap) {
     // If we already have the duration from a previous source info refresh, use it.
     durationUs = durationUs == C.TIME_UNSET ? timelineDurationUs : durationUs;
-    if (!timelineIsPlaceholder
-        && timelineDurationUs == durationUs
-        && timelineIsSeekable == isSeekable
-        && timelineIsLive == isLive) {
-      // Suppress no-op source info changes.
-      return;
+
+    if (seekMap instanceof SeekMap.MockWindowSeekMap) {
+      timelineDurationUs = durationUs;
+      timelineIsSeekable = isSeekable;
+      timelineIsLive = isLive;
+      timelineIsPlaceholder = false;
+      notifySourceInfoRefreshed((SeekMap.MockWindowSeekMap) seekMap);
+    } else {
+      if (!timelineIsPlaceholder
+          && timelineDurationUs == durationUs
+          && timelineIsSeekable == isSeekable
+          && timelineIsLive == isLive) {
+        // Suppress no-op source info changes.
+        return;
+      }
+      timelineDurationUs = durationUs;
+      timelineIsSeekable = isSeekable;
+
+      timelineIsLive = isLive;
+      timelineIsPlaceholder = false;
+      notifySourceInfoRefreshed(null);
     }
-    timelineDurationUs = durationUs;
-    timelineIsSeekable = isSeekable;
-    timelineIsLive = isLive;
-    timelineIsPlaceholder = false;
-    notifySourceInfoRefreshed();
+
   }
 
   // Internal methods.
-
-  private void notifySourceInfoRefreshed() {
+  private void notifySourceInfoRefreshed( @Nullable SeekMap.MockWindowSeekMap seekMap) {
     // TODO: Split up isDynamic into multiple fields to indicate which values may change. Then
     // indicate that the duration may change until it's known. See [internal: b/69703223].
-    Timeline timeline =
-        new SinglePeriodTimeline(
-            timelineDurationUs,
-            timelineIsSeekable,
-            /* isDynamic= */ false,
-            /* useLiveConfiguration= */ timelineIsLive,
-            /* manifest= */ null,
-            mediaItem);
+    Timeline timeline;
+    if (seekMap == null || !timelineIsLive) {
+      timeline =
+          new SinglePeriodTimeline(
+              timelineDurationUs,
+              timelineIsSeekable,
+              /* isDynamic= */ false,
+              /* useLiveConfiguration= */ timelineIsLive,
+              /* manifest= */ null,
+              mediaItem);
+    } else {
+      long windowStartTimeMs = seekMap.mockSeekPoint.position;
+      long windowStartPositionUs = seekMap.mockSeekPoint.timeUs;
+      long offsetFromInitialStartTimeUs =
+          seekMap.initialStartTimeUs - windowStartTimeMs * 1000;
+      timeline =
+          new SinglePeriodTimeline(
+              timelineDurationUs,
+              timelineIsSeekable,
+              /* isDynamic= */ false,
+              /* useLiveConfiguration= */ timelineIsLive,
+              /* manifest= */ null,
+              mediaItem);
+      ((SinglePeriodTimeline) timeline).liveOffsetFromPositionMs = windowStartTimeMs;
+      ((SinglePeriodTimeline) timeline).windowDefaultStartPositionUs = windowStartPositionUs;
+      ((SinglePeriodTimeline) timeline).liveOffsetFromInitialStartTimeUs = offsetFromInitialStartTimeUs;
+    }
+
     if (timelineIsPlaceholder) {
       // TODO: Actually prepare the extractors during preparation so that we don't need a
       // placeholder. See https://github.com/google/ExoPlayer/issues/4727.
+      //第一次准备
       timeline =
           new ForwardingTimeline(timeline) {
             @Override
@@ -371,4 +403,5 @@ public final class ProgressiveMediaSource extends BaseMediaSource
     }
     refreshSourceInfo(timeline);
   }
+
 }

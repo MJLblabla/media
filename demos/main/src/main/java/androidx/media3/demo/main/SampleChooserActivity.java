@@ -69,7 +69,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-/** An activity for selecting from a list of media samples. */
+/**
+ * An activity for selecting from a list of media samples.
+ */
 public class SampleChooserActivity extends AppCompatActivity
     implements DownloadTracker.Listener, OnChildClickListener {
 
@@ -97,7 +99,7 @@ public class SampleChooserActivity extends AppCompatActivity
     Intent intent = getIntent();
     String dataUri = intent.getDataString();
     if (dataUri != null) {
-      uris = new String[] {dataUri};
+      uris = new String[]{dataUri};
     } else {
       ArrayList<String> uriList = new ArrayList<>();
       AssetManager assetManager = getAssets();
@@ -120,9 +122,30 @@ public class SampleChooserActivity extends AppCompatActivity
     downloadTracker = DemoUtil.getDownloadTracker(/* context= */ this);
     loadSample();
     startDownloadService();
+
+    findViewById(R.id.rtmp).setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent i = new Intent(SampleChooserActivity.this, UrlTestActivity.class);
+        i.putExtra("url", "rtmp://pili-rtmp.qnsdk.com/sdk-live/qn_live_kit-1556829451990339584");
+        startActivity(i);
+      }
+    });
+
+    findViewById(R.id.hsl).setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        Intent i = new Intent(SampleChooserActivity.this, UrlTestActivity.class);
+        i.putExtra("url",
+            "https://pili-hls.qnsdk.com/sdk-live/qn_live_kit-1556829451990339584.m3u8");
+        startActivity(i);
+      }
+    });
   }
 
-  /** Start the download service if it should be running but it's not currently. */
+  /**
+   * Start the download service if it should be running but it's not currently.
+   */
   @OptIn(markerClass = androidx.media3.common.util.UnstableApi.class)
   private void startDownloadService() {
     // Starting the service in the foreground causes notification flicker if there is no scheduled

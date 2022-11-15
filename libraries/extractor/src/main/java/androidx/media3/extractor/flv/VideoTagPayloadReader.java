@@ -82,7 +82,7 @@ import androidx.media3.extractor.TrackOutput;
 
     timeUs += compositionTimeMs * 1000L;
     // Parse avc sequence header in case this was not done before.
-    if (packetType == AVC_PACKET_TYPE_SEQUENCE_HEADER && !hasOutputFormat) {
+    if (packetType == AVC_PACKET_TYPE_SEQUENCE_HEADER ) {
       ParsableByteArray videoSequence = new ParsableByteArray(new byte[data.bytesLeft()]);
       data.readBytes(videoSequence.getData(), 0, data.bytesLeft());
       AvcConfig avcConfig = AvcConfig.parse(videoSequence);

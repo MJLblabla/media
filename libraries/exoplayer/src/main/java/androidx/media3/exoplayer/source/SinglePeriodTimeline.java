@@ -39,17 +39,22 @@ public final class SinglePeriodTimeline extends Timeline {
   private final long periodDurationUs;
   private final long windowDurationUs;
   private final long windowPositionInPeriodUs;
-  private final long windowDefaultStartPositionUs;
+  public long windowDefaultStartPositionUs;
   private final boolean isSeekable;
   private final boolean isDynamic;
   private final boolean suppressPositionProjection;
-  @Nullable private final Object manifest;
-  @Nullable private final MediaItem mediaItem;
-  @Nullable private final MediaItem.LiveConfiguration liveConfiguration;
+  @Nullable
+  private final Object manifest;
+  @Nullable
+  private final MediaItem mediaItem;
+  @Nullable
+  private final MediaItem.LiveConfiguration liveConfiguration;
 
+  public long liveOffsetFromInitialStartTimeUs = 1;
+  public long liveOffsetFromPositionMs = C.TIME_UNSET;
   /**
    * @deprecated Use {@link #SinglePeriodTimeline(long, boolean, boolean, boolean, Object,
-   *     MediaItem)} instead.
+   * MediaItem)} instead.
    */
   // Provide backwards compatibility.
   @SuppressWarnings("deprecation")
@@ -76,13 +81,13 @@ public final class SinglePeriodTimeline extends Timeline {
   /**
    * Creates a timeline containing a single period and a window that spans it.
    *
-   * @param durationUs The duration of the period, in microseconds.
-   * @param isSeekable Whether seeking is supported within the period.
-   * @param isDynamic Whether the window may change when the timeline is updated.
+   * @param durationUs           The duration of the period, in microseconds.
+   * @param isSeekable           Whether seeking is supported within the period.
+   * @param isDynamic            Whether the window may change when the timeline is updated.
    * @param useLiveConfiguration Whether the window is live and {@link MediaItem#liveConfiguration}
-   *     is used to configure live playback behaviour.
-   * @param manifest The manifest. May be {@code null}.
-   * @param mediaItem A media item used for {@link Window#mediaItem}.
+   *                             is used to configure live playback behaviour.
+   * @param manifest             The manifest. May be {@code null}.
+   * @param mediaItem            A media item used for {@link Window#mediaItem}.
    */
   public SinglePeriodTimeline(
       long durationUs,
@@ -105,7 +110,7 @@ public final class SinglePeriodTimeline extends Timeline {
 
   /**
    * @deprecated Use {@link #SinglePeriodTimeline(long, long, long, long, boolean, boolean, boolean,
-   *     Object, MediaItem)} instead.
+   * Object, MediaItem)} instead.
    */
   // Provide backwards compatibility.
   @SuppressWarnings("deprecation")
@@ -139,18 +144,18 @@ public final class SinglePeriodTimeline extends Timeline {
    * Creates a timeline with one period, and a window of known duration starting at a specified
    * position in the period.
    *
-   * @param periodDurationUs The duration of the period in microseconds.
-   * @param windowDurationUs The duration of the window in microseconds.
-   * @param windowPositionInPeriodUs The position of the start of the window in the period, in
-   *     microseconds.
+   * @param periodDurationUs             The duration of the period in microseconds.
+   * @param windowDurationUs             The duration of the window in microseconds.
+   * @param windowPositionInPeriodUs     The position of the start of the window in the period, in
+   *                                     microseconds.
    * @param windowDefaultStartPositionUs The default position relative to the start of the window at
-   *     which to begin playback, in microseconds.
-   * @param isSeekable Whether seeking is supported within the window.
-   * @param isDynamic Whether the window may change when the timeline is updated.
-   * @param useLiveConfiguration Whether the window is live and {@link MediaItem#liveConfiguration}
-   *     is used to configure live playback behaviour.
-   * @param manifest The manifest. May be {@code null}.
-   * @param mediaItem A media item used for {@link Timeline.Window#mediaItem}.
+   *                                     which to begin playback, in microseconds.
+   * @param isSeekable                   Whether seeking is supported within the window.
+   * @param isDynamic                    Whether the window may change when the timeline is updated.
+   * @param useLiveConfiguration         Whether the window is live and {@link MediaItem#liveConfiguration}
+   *                                     is used to configure live playback behaviour.
+   * @param manifest                     The manifest. May be {@code null}.
+   * @param mediaItem                    A media item used for {@link Timeline.Window#mediaItem}.
    */
   public SinglePeriodTimeline(
       long periodDurationUs,
@@ -180,7 +185,7 @@ public final class SinglePeriodTimeline extends Timeline {
 
   /**
    * @deprecated Use {@link #SinglePeriodTimeline(long, long, long, long, long, long, long, boolean,
-   *     boolean, boolean, Object, MediaItem, MediaItem.LiveConfiguration)} instead.
+   * boolean, boolean, Object, MediaItem, MediaItem.LiveConfiguration)} instead.
    */
   @Deprecated
   public SinglePeriodTimeline(
@@ -214,7 +219,7 @@ public final class SinglePeriodTimeline extends Timeline {
 
   /**
    * @deprecated Use {@link #SinglePeriodTimeline(long, long, long, long, long, long, long, boolean,
-   *     boolean, boolean, Object, MediaItem, MediaItem.LiveConfiguration)} instead.
+   * boolean, boolean, Object, MediaItem, MediaItem.LiveConfiguration)} instead.
    */
   @Deprecated
   public SinglePeriodTimeline(
@@ -250,28 +255,28 @@ public final class SinglePeriodTimeline extends Timeline {
    * Creates a timeline with one period, and a window of known duration starting at a specified
    * position in the period.
    *
-   * @param presentationStartTimeMs The start time of the presentation in milliseconds since the
-   *     epoch, or {@link C#TIME_UNSET} if unknown or not applicable.
-   * @param windowStartTimeMs The window's start time in milliseconds since the epoch, or {@link
-   *     C#TIME_UNSET} if unknown or not applicable.
+   * @param presentationStartTimeMs      The start time of the presentation in milliseconds since the
+   *                                     epoch, or {@link C#TIME_UNSET} if unknown or not applicable.
+   * @param windowStartTimeMs            The window's start time in milliseconds since the epoch, or {@link
+   *                                     C#TIME_UNSET} if unknown or not applicable.
    * @param elapsedRealtimeEpochOffsetMs The offset between {@link
-   *     android.os.SystemClock#elapsedRealtime()} and the time since the Unix epoch according to
-   *     the clock of the media origin server, or {@link C#TIME_UNSET} if unknown or not applicable.
-   * @param periodDurationUs The duration of the period in microseconds.
-   * @param windowDurationUs The duration of the window in microseconds.
-   * @param windowPositionInPeriodUs The position of the start of the window in the period, in
-   *     microseconds.
+   *                                     android.os.SystemClock#elapsedRealtime()} and the time since the Unix epoch according to
+   *                                     the clock of the media origin server, or {@link C#TIME_UNSET} if unknown or not applicable.
+   * @param periodDurationUs             The duration of the period in microseconds.
+   * @param windowDurationUs             The duration of the window in microseconds.
+   * @param windowPositionInPeriodUs     The position of the start of the window in the period, in
+   *                                     microseconds.
    * @param windowDefaultStartPositionUs The default position relative to the start of the window at
-   *     which to begin playback, in microseconds.
-   * @param isSeekable Whether seeking is supported within the window.
-   * @param isDynamic Whether the window may change when the timeline is updated.
-   * @param suppressPositionProjection Whether {@link #getWindow(int, Window, long) position
-   *     projection} in a playlist should be suppressed. This only applies for dynamic timelines and
-   *     is ignored otherwise.
-   * @param manifest The manifest. May be {@code null}.
-   * @param mediaItem A media item used for {@link Timeline.Window#mediaItem}.
-   * @param liveConfiguration The configuration for live playback behaviour, or {@code null} if the
-   *     window is not live.
+   *                                     which to begin playback, in microseconds.
+   * @param isSeekable                   Whether seeking is supported within the window.
+   * @param isDynamic                    Whether the window may change when the timeline is updated.
+   * @param suppressPositionProjection   Whether {@link #getWindow(int, Window, long) position
+   *                                     projection} in a playlist should be suppressed. This only applies for dynamic timelines and
+   *                                     is ignored otherwise.
+   * @param manifest                     The manifest. May be {@code null}.
+   * @param mediaItem                    A media item used for {@link Timeline.Window#mediaItem}.
+   * @param liveConfiguration            The configuration for live playback behaviour, or {@code null} if the
+   *                                     window is not live.
    */
   public SinglePeriodTimeline(
       long presentationStartTimeMs,
@@ -324,7 +329,7 @@ public final class SinglePeriodTimeline extends Timeline {
         }
       }
     }
-    return window.set(
+    Window w = window.set(
         Window.SINGLE_WINDOW_UID,
         mediaItem,
         manifest,
@@ -339,6 +344,9 @@ public final class SinglePeriodTimeline extends Timeline {
         /* firstPeriodIndex= */ 0,
         /* lastPeriodIndex= */ 0,
         windowPositionInPeriodUs);
+    w.liveOffsetFromInitialStartTimeUs = liveOffsetFromInitialStartTimeUs;
+    w.liveOffsetFromPositionMs = liveOffsetFromPositionMs;
+    return w;
   }
 
   @Override
