@@ -54,15 +54,6 @@ public class UrlTestActivity extends AppCompatActivity {
                     .setMinPlaybackSpeed(1f)
                     .setMaxPlaybackSpeed(2.0f)
                     .build())
-//            .setUri("rtmp://pili-publish.qnsdk.com/sdk-live/qn_live_kit-1567702014635286528")
-//            .setLiveConfiguration(
-//                new MediaItem.LiveConfiguration.Builder()
-//                    .setTargetOffsetMs(2000)
-//                    .setMinOffsetMs(1000)
-//                    .setMaxOffsetMs(3000)
-//                    .setMinPlaybackSpeed(1f)
-//                    .setMaxPlaybackSpeed(2.0f)
-//                    .build())
             .build();
 
 // Set the media item to be played.

@@ -56,7 +56,7 @@ android {
     productFlavors {
         noDecoderExtensions {
             dimension "decoderExtensions"
-            buildConfigField "boolean", "USE_DECODER_EXTENSIONS", "false"
+            buildConfigField "boolean", "USE_DECODER_EXTENSIONS", "true"
         }
         withDecoderExtensions {
             dimension "decoderExtensions"
@@ -79,8 +79,9 @@ dependencies {
     implementation project(modulePrefix + 'lib-ui')
     implementation project(modulePrefix + 'lib-datasource-cronet')
     implementation project(modulePrefix + 'lib-exoplayer-ima')
+    implementation project(modulePrefix + 'lib-decoder-ffmpeg')
+
     withDecoderExtensionsImplementation project(modulePrefix + 'lib-decoder-av1')
-    withDecoderExtensionsImplementation project(modulePrefix + 'lib-decoder-ffmpeg')
     withDecoderExtensionsImplementation project(modulePrefix + 'lib-decoder-flac')
     withDecoderExtensionsImplementation project(modulePrefix + 'lib-decoder-opus')
     withDecoderExtensionsImplementation project(modulePrefix + 'lib-decoder-vp9')

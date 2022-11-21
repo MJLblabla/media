@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "androidx.media3.demo.main",
+  "variantName": "noDecoderExtensionsRelease",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 1000000102,
+      "versionName": "1.0.0-beta02",
+      "outputFile": "demo-noDecoderExtensions-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

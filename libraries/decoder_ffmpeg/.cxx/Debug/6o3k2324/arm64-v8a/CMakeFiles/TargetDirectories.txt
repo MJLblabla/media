@@ -1,0 +1,3 @@
+/Users/manjiale/dev/media/libraries/decoder_ffmpeg/.cxx/Debug/6o3k2324/arm64-v8a/CMakeFiles/rebuild_cache.dir
+/Users/manjiale/dev/media/libraries/decoder_ffmpeg/.cxx/Debug/6o3k2324/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/manjiale/dev/media/libraries/decoder_ffmpeg/.cxx/Debug/6o3k2324/arm64-v8a/CMakeFiles/ffmpegJNI.dir

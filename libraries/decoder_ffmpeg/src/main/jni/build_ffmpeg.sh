@@ -15,27 +15,30 @@
 # limitations under the License.
 #
 
-FFMPEG_MODULE_PATH=$1
-NDK_PATH=$2
-HOST_PLATFORM=$3
-ENABLED_DECODERS=("${@:4}")
+echo "pwdpwdpwdpwdpwdpwdpwdpwd ----- pwd "
+pwd
+
+NDK_PATH="/Users/manjiale/Library/Android/sdk/ndk/21.4.7075529"
+HOST_PLATFORM="darwin-x86_64"
+ENABLED_DECODERS=(h264 aac hevc vorbis opus flac)
 JOBS=$(nproc 2> /dev/null || sysctl -n hw.ncpu 2> /dev/null || echo 4)
 echo "Using $JOBS jobs for make"
 COMMON_OPTIONS="
     --target-os=android
-    --enable-static
-    --disable-shared
+    --disable-static
+    --enable-shared
     --disable-doc
     --disable-programs
     --disable-everything
     --disable-avdevice
     --disable-avformat
-    --disable-swscale
     --disable-postproc
     --disable-avfilter
     --disable-symver
     --disable-avresample
     --enable-swresample
+    --enable-swscale
+    --enable-small
     --extra-ldexeflags=-pie
     "
 TOOLCHAIN_PREFIX="${NDK_PATH}/toolchains/llvm/prebuilt/${HOST_PLATFORM}/bin"
@@ -43,7 +46,7 @@ for decoder in "${ENABLED_DECODERS[@]}"
 do
     COMMON_OPTIONS="${COMMON_OPTIONS} --enable-decoder=${decoder}"
 done
-cd "${FFMPEG_MODULE_PATH}/jni/ffmpeg"
+cd "ffmpeg"
 ./configure \
     --libdir=android-libs/armeabi-v7a \
     --arch=arm \

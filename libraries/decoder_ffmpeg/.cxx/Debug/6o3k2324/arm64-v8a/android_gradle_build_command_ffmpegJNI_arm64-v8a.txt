@@ -1,0 +1,7 @@
+Executable : /Users/manjiale/Library/Android/sdk/cmake/3.18.1/bin/ninja
+arguments : 
+-C
+/Users/manjiale/dev/media/libraries/decoder_ffmpeg/.cxx/Debug/6o3k2324/arm64-v8a
+ffmpegJNI
+jvmArgs : 
+

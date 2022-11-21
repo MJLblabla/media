@@ -35,3 +35,4 @@ include modulePrefix + 'test-exoplayer-playback'
 project(modulePrefix + 'test-exoplayer-playback').projectDir = new File(rootDir, 'libraries/test_exoplayer_playback')
 
 apply from: 'core_settings.gradle'
+
